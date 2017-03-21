@@ -1,0 +1,209 @@
+package com.transmax.grade;
+
+public class Student {
+
+	private String lastName;
+	private String firstName;
+	private int score;
+
+	public Student(String firstName, String lastName, int score) {
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.score = score;
+
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public int getScore() {
+		return score;
+	}
+
+	public void setScore(int score) {
+		this.score = score;
+	}
+
+}
+
+
+
+package com.transmax.grade;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+public class ReadFile {
+
+	private String path;
+
+	public ReadFile(String fileLocation) {
+		path = fileLocation;
+	}
+
+	public String[] openFile() throws IOException {
+		int numberOFLines = countLines();
+		BufferedReader br = new BufferedReader(new FileReader(path));
+
+		// Create an array to store the lines of text
+		String[] data = new String[numberOFLines];
+		for (int i = 0; i < numberOFLines; i++) {
+			data[i] = br.readLine();
+		}
+		br.close();
+		return data;
+	}
+
+	private int countLines() throws IOException {
+		int numberOFLines = 0;
+		BufferedReader br = new BufferedReader(new FileReader(path));
+		while (br.readLine() != null) {
+			numberOFLines++;
+		}
+		br.close();
+		return numberOFLines;
+	}
+
+}
+
+
+package com.transmax.grade;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
+public class Grading {
+
+	public static void main(String[] args) {
+
+		// Read file from a path location
+		ReadFile readFile = new ReadFile("c:/21March.txt");
+
+		// Declaration and dataType to store data
+		GradingImplementation gradeImpl = new GradingImplementation();
+		ArrayList<Student> score_list = new ArrayList<>();
+
+		try {
+			// open the file, read the data; split and store in an object
+			String[] data = readFile.openFile();
+			String[] temp;
+			for (int i = 0; i < data.length; i++) {
+				temp = data[i].split(",");
+				try {
+					score_list.add(new Student(temp[0], temp[1], Integer
+							.parseInt(temp[2])));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+
+			// Call implementation class with objects of student
+			gradeImpl.sort_score(score_list);
+
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+}
+
+
+
+package com.transmax.grade;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
+public class GradingImplementation {
+
+	private void sort(ArrayList<Student> score_list) {
+		Collections.sort(score_list, new Comparator<Student>() {
+			@Override
+			public int compare(Student o1, Student o2) {
+				if (o1.getScore() != o2.getScore())
+					return o2.getScore() - o1.getScore();
+				int r = o1.getLastName().compareTo(o2.getLastName());
+				if (r != 0)
+					return r;
+				return o1.getFirstName().compareTo(o2.getFirstName());
+			}
+		});
+	}
+
+	public void sort_score(ArrayList<Student> score_list) {
+
+		sort(score_list);
+
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(
+					"-graded.txt"));
+			String rec;
+			for (Student s : score_list) {
+
+				System.out.println("....sorted... ");
+				System.out.println(s.getFirstName());
+				System.out.println(s.getLastName());
+				System.out.println(s.getScore());
+				rec = String.format("%s,%s, %d", s.getFirstName(),
+						s.getLastName(), s.getScore());
+
+				writer.write(rec);
+				writer.newLine();
+			}
+			writer.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}
+
+
+package com.transmax.test;
+
+import java.util.ArrayList;
+
+public class GradeTest {
+		
+	ArrayList<Student> score_list = new ArrayList<>();
+	Student student = new Student("TERESSA", "BUNKY", 88);
+	score_list.add(student);
+	Student student = new Student("ALLAN", "SMITH", 70);
+	score_list.add(student);
+	Student student = new Student("MADISON", "KING", 88);
+	score_list.add(student);
+	Student student = new Student("FRANCIS", "SMITH", 85);
+	score_list.add(student);
+	
+	ArrayList<Student> score_listOutput = new ArrayList<>();
+	Student student = new Student("MADISON", "KING", 88);
+	score_listOutput.add(student);
+	Student student = new Student("TERESSA", "BUNKY", 88);
+	score_listOutput.add(student);
+	Student student = new Student("FRANCIS", "SMITH", 85);
+	score_listOutput.add(student);
+	Student student = new Student("ALLAN", "SMITH", 70);
+	score_list.add(student);
+	
+	@Test
+		GradingImplementation gradeImpl = new GradingImplementation();
+		Assert.assertEquals(gradeImpl.sort_score(score_list), score_listOutput);
+
+		
+	}
+}
